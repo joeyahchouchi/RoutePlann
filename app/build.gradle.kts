@@ -86,4 +86,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    // Location
+    implementation(libs.google.play.services.location)
+
+// Maps (OSMDroid — free, no API key)
+    implementation(libs.osmdroid)
 }

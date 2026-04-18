@@ -41,19 +41,18 @@ class MainViewModel(
         _uiState.value = RouteUiState.Loading
 
         viewModelScope.launch {
-            // Defense layer 1: no network → go straight to cache
             if (!networkHelper.isOnline()) {
                 serveCachedOrError(message = "No internet — showing last saved route")
                 return@launch
             }
 
-            // Defense layer 2: try API, fall back to cache on failure
             try {
                 val result = repository.getRoute(origin, destination)
                 _uiState.value = RouteUiState.Success(
                     distanceKm = result.distanceMeters / 1000.0,
                     durationMin = result.durationSeconds / 60.0,
-                    source = result.source
+                    source = result.source,
+                    geometry = result.geometry
                 )
             } catch (e: Exception) {
                 serveCachedOrError(message = "Network error — showing last saved route")
@@ -67,7 +66,8 @@ class MainViewModel(
             RouteUiState.OfflineFallback(
                 distanceKm = cached.distanceMeters / 1000.0,
                 durationMin = cached.durationSeconds / 60.0,
-                message = message
+                message = message,
+                geometry = cached.geometry
             )
         } else {
             RouteUiState.Error("$message (no cached data available).")
@@ -81,7 +81,8 @@ class MainViewModel(
                 _uiState.value = RouteUiState.Success(
                     distanceKm = cached.distanceMeters / 1000.0,
                     durationMin = cached.durationSeconds / 60.0,
-                    source = cached.source
+                    source = cached.source,
+                    geometry = cached.geometry
                 )
             }
         }

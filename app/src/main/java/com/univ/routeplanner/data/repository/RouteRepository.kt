@@ -1,6 +1,7 @@
 package com.univ.routeplanner.data.repository
 
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.univ.routeplanner.BuildConfig
 import com.univ.routeplanner.data.api.OrsApiService
 import com.univ.routeplanner.data.api.RetrofitClient
@@ -25,7 +26,11 @@ class RouteRepository(
         val segment = feature?.properties?.segments?.firstOrNull()
             ?: throw IllegalStateException("No route data returned from API")
 
-        val geometryJson = gson.toJson(feature.geometry?.coordinates ?: emptyList<List<Double>>())
+        val coordinates: List<List<Double>> = feature.geometry?.coordinates ?: emptyList()
+        val geometryJson = gson.toJson(coordinates)
+        val geometryPairs = coordinates.mapNotNull { pt ->
+            if (pt.size >= 2) Pair(pt[0], pt[1]) else null
+        }
 
         val entity = RouteEntity(
             origin = origin,
@@ -42,18 +47,32 @@ class RouteRepository(
             durationSeconds = segment.duration,
             origin = origin,
             destination = destination,
-            source = "live API"
+            source = "live API",
+            geometry = geometryPairs
         )
     }
 
     suspend fun getLatestCachedRoute(): RouteResult? {
         val entity = dao.getLatestRoute() ?: return null
+
+        // Parse the stored geometry JSON back into pairs
+        val listType = object : TypeToken<List<List<Double>>>() {}.type
+        val coords: List<List<Double>> = try {
+            gson.fromJson(entity.geometryJson, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+        val geometryPairs = coords.mapNotNull { pt ->
+            if (pt.size >= 2) Pair(pt[0], pt[1]) else null
+        }
+
         return RouteResult(
             distanceMeters = entity.distanceMeters,
             durationSeconds = entity.durationSeconds,
             origin = entity.origin,
             destination = entity.destination,
-            source = "offline cache"
+            source = "offline cache",
+            geometry = geometryPairs
         )
     }
 }
@@ -63,5 +82,6 @@ data class RouteResult(
     val durationSeconds: Double,
     val origin: String,
     val destination: String,
-    val source: String
+    val source: String,
+    val geometry: List<Pair<Double, Double>> = emptyList()
 )

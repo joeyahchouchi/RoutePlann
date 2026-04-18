@@ -6,12 +6,14 @@ sealed class RouteUiState {
     data class Success(
         val distanceKm: Double,
         val durationMin: Double,
-        val source: String
+        val source: String,
+        val geometry: List<Pair<Double, Double>> = emptyList()  // (lng, lat) pairs
     ) : RouteUiState()
     data class OfflineFallback(
         val distanceKm: Double,
         val durationMin: Double,
-        val message: String   // e.g. "No internet — showing last saved route"
+        val message: String,
+        val geometry: List<Pair<Double, Double>> = emptyList()
     ) : RouteUiState()
     data class Error(val message: String) : RouteUiState()
 }
