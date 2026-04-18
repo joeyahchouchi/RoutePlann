@@ -87,6 +87,12 @@ class MainViewModel(
             }
         }
     }
+    fun clearCache() {
+        viewModelScope.launch {
+            repository.clearCache()
+            _uiState.value = RouteUiState.Idle
+        }
+    }
 
     class Factory(private val context: Context) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

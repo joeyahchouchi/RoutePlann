@@ -75,6 +75,10 @@ class RouteRepository(
             geometry = geometryPairs
         )
     }
+
+    suspend fun clearCache() {
+        dao.clearAll()
+    }
 }
 
 data class RouteResult(
