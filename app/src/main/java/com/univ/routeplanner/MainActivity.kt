@@ -1,6 +1,8 @@
 package com.univ.routeplanner
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.View
@@ -41,10 +43,25 @@ class MainActivity : AppCompatActivity() {
         else binding.tvStatus.text = "Location permission denied."
     }
 
+    // Launcher for HistoryActivity — handles the result when user picks a saved route
+    private val historyLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val origin = result.data?.getStringExtra(HistoryActivity.EXTRA_ORIGIN)
+            val destination = result.data?.getStringExtra(HistoryActivity.EXTRA_DESTINATION)
+            if (!origin.isNullOrBlank() && !destination.isNullOrBlank()) {
+                viewModel.setCurrentLocation(origin)
+                binding.etDestination.setText(destination)
+                updateDestinationMarker(destination)
+                viewModel.fetchRoute(destination)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // OSMDroid config MUST be set BEFORE inflating any layout that contains a MapView
         Configuration.getInstance().apply {
             userAgentValue = packageName
             load(applicationContext, PreferenceManager.getDefaultSharedPreferences(applicationContext))
@@ -98,7 +115,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnClearCache.setOnClickListener {
             viewModel.clearCache()
-            // Also clear the map overlays
             currentLocationMarker?.let { binding.mapView.overlays.remove(it) }
             destinationMarker?.let { binding.mapView.overlays.remove(it) }
             routePolyline?.let { binding.mapView.overlays.remove(it) }
@@ -107,6 +123,11 @@ class MainActivity : AppCompatActivity() {
             routePolyline = null
             binding.mapView.invalidate()
             binding.tvStatus.text = "Cache cleared"
+        }
+
+        binding.btnHistory.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            historyLauncher.launch(intent)
         }
     }
 

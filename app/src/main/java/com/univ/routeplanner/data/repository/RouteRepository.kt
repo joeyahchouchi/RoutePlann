@@ -55,7 +55,6 @@ class RouteRepository(
     suspend fun getLatestCachedRoute(): RouteResult? {
         val entity = dao.getLatestRoute() ?: return null
 
-        // Parse the stored geometry JSON back into pairs
         val listType = object : TypeToken<List<List<Double>>>() {}.type
         val coords: List<List<Double>> = try {
             gson.fromJson(entity.geometryJson, listType) ?: emptyList()
@@ -74,6 +73,14 @@ class RouteRepository(
             source = "offline cache",
             geometry = geometryPairs
         )
+    }
+
+    /**
+     * Returns every saved route, newest first.
+     * Used by the History screen.
+     */
+    suspend fun getAllHistory(): List<RouteEntity> {
+        return dao.getAllRoutes()
     }
 
     suspend fun clearCache() {

@@ -14,6 +14,9 @@ interface RouteDao {
     @Query("SELECT * FROM routes ORDER BY fetchedAt DESC LIMIT 1")
     suspend fun getLatestRoute(): RouteEntity?
 
+    @Query("SELECT * FROM routes ORDER BY fetchedAt DESC")
+    suspend fun getAllRoutes(): List<RouteEntity>
+
     @Query("DELETE FROM routes")
     suspend fun clearAll()
 }
