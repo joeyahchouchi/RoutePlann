@@ -3,6 +3,7 @@ package com.univ.routeplanner
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.View
@@ -43,7 +44,6 @@ class MainActivity : AppCompatActivity() {
         else binding.tvStatus.text = "Location permission denied."
     }
 
-    // Launcher for HistoryActivity — handles the result when user picks a saved route
     private val historyLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -217,6 +217,9 @@ class MainActivity : AppCompatActivity() {
             position = point
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "My Location"
+            icon = icon?.constantState?.newDrawable()?.mutate()?.apply {
+                setColorFilter(android.graphics.Color.BLUE, PorterDuff.Mode.SRC_IN)
+            }
         }
         binding.mapView.overlays.add(marker)
         currentLocationMarker = marker
@@ -240,6 +243,9 @@ class MainActivity : AppCompatActivity() {
             position = point
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "Destination"
+            icon = icon?.constantState?.newDrawable()?.mutate()?.apply {
+                setColorFilter(android.graphics.Color.RED, PorterDuff.Mode.SRC_IN)
+            }
         }
         binding.mapView.overlays.add(marker)
         destinationMarker = marker
