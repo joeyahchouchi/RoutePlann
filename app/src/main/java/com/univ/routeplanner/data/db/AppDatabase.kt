@@ -6,13 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [RouteEntity::class],
-    version = 2,                    // bumped from 1 to 2
+    entities = [RouteEntity::class, UserEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun routeDao(): RouteDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -25,7 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "route_planner.db"
                 )
-                    .fallbackToDestructiveMigration()   // NEW
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
